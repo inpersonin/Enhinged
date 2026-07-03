@@ -1,10 +1,12 @@
 import type { Metadata, Viewport } from "next"
-import { Geist_Mono, Playfair_Display } from "next/font/google"
+import { Geist, Geist_Mono } from "next/font/google"
+import { ThemeProvider } from "@/components/theme-provider"
+import "../styles/animations.css"
 import "./globals.css"
 
-const playfairDisplay = Playfair_Display({
+const geistSans = Geist({
   subsets: ["latin"],
-  variable: "--font-playfair",
+  variable: "--font-geist",
 })
 
 const geistMono = Geist_Mono({
@@ -13,8 +15,13 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "Enhinged | Brutalist Chat Interface",
-  description: "A brutalist void chat frontend for the Enhinged Hinglish model.",
+  title: "Enhinged | Hinglish GPT Chat Interface",
+  description: "A premium AI chat interface for the Enhinged Hinglish language model. Features a custom GPT-2 architecture trained on everyday conversational Hinglish.",
+  openGraph: {
+    title: "Enhinged | Hinglish GPT",
+    description: "Experience a completely bespoke Hinglish conversational AI in a premium, glassmorphic interface.",
+    type: "website",
+  },
 }
 
 export const viewport: Viewport = {
@@ -27,10 +34,17 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${playfairDisplay.variable} ${geistMono.variable}`}>
-      <body className="overflow-x-hidden antialiased">
-        <div className="noise-overlay" />
-        {children}
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
+      <body className="overflow-x-hidden antialiased bg-background text-foreground">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
+          <div className="noise-overlay" />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   )

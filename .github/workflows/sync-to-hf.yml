@@ -1,0 +1,43 @@
+name: Sync to Hugging Face Space
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  sync-to-hub:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Install huggingface_hub
+        run: pip install huggingface_hub
+        
+      - name: Sync to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          huggingface-cli upload inpersonin/enhinged ./ --repo-type space \
+            --exclude "frontend-template/*" \
+            --exclude ".template_extract/*" \
+            --exclude "node_modules/*" \
+            --exclude ".next/*" \
+            --exclude "out/*" \
+            --exclude "app/*" \
+            --exclude "components/*" \
+            --exclude "hooks/*" \
+            --exclude "lib/*" \
+            --exclude "styles/*" \
+            --exclude "public/*" \
+            --exclude "*.json" \
+            --exclude "*.mjs" \
+            --exclude "*.tsx" \
+            --exclude "*.ts" \
+            --exclude "index.html" \
+            --exclude ".vscode/*" \
+            --exclude ".git/*" \
+            --exclude ".github/*"

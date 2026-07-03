@@ -1,0 +1,38 @@
+# Version control
+.git
+.github
+.gitignore
+
+# Frontend directories
+node_modules/
+.next/
+out/
+app/
+components/
+hooks/
+lib/
+styles/
+public/
+frontend-template/
+.template_extract/
+
+# Frontend config files
+*.json
+*.mjs
+*.ts
+*.tsx
+index.html
+
+# IDE
+.vscode/
+
+# Python cache
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# Environment files
+.env
+.env.*
