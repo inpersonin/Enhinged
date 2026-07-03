@@ -15,3 +15,6 @@ attention_maps/
 out/
 node_modules/
 .template_extract/
+*.zip
+corpus.txt
+metrics.json
