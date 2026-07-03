@@ -173,6 +173,30 @@ The backend exposes a small HTTP surface intended for integration with another a
 
 This makes it straightforward to connect the model to a custom React, Next.js, or other client later without changing the inference code.
 
+### Deployment Notes
+
+For Hugging Face Spaces with the Docker SDK:
+
+- keep the checkpoint at `checkpoints/best.pt`
+- set `ENHINGED_CKPT_PATH` if you want to point at a different checkpoint
+- set `ENHINGED_CORS_ORIGINS` to your GitHub Pages origin, or leave it as `*` for open cross-origin access
+- the container listens on port `7860`
+
+The intended split is:
+
+- backend: Hugging Face Space running this FastAPI app
+- frontend: static GitHub Pages site calling the HF Space `/generate` endpoint
+
+## Frontend
+
+The repository now also includes a Next.js frontend scaffold designed for GitHub Pages export. It uses a brutalist void layout with a restrained glass chat panel, and the message input lives in the hero itself.
+
+Frontend build settings:
+
+- set `NEXT_PUBLIC_API_URL` to your HF Space URL if it differs from `https://inpersonin-enhinged.hf.space`
+- set `NEXT_PUBLIC_BASE_PATH` during build if you publish under a project pages path
+- the GitHub Actions workflow in `.github/workflows/deploy-pages.yml` builds the static export and deploys it to Pages
+
 ## Future Deployment
 
 Recommended next steps for production deployment:
@@ -186,5 +210,5 @@ Recommended next steps for production deployment:
 
 ## Notes
 
-- The repository is backend-only.
-- The project is designed to be published on GitHub and deployed as a FastAPI inference service.
+- The repository now includes both the FastAPI backend and the static Next.js frontend scaffold.
+- The project is designed to be published on GitHub Pages for the frontend and Hugging Face Spaces for the backend.

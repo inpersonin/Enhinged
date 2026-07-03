@@ -11,3 +11,7 @@ attention_maps/
 *.pt
 *.pth
 *.ckpt
+.next/
+out/
+node_modules/
+.template_extract/

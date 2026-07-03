@@ -62,7 +62,7 @@ def _build_history_string(history: list[dict]) -> str:
         content = turn.get("content", "").strip()
         if not content:
             continue
-        label = "User" if role == "user" else "Bot"
+        label = "User" if role == "user" else "Assistant"
         lines.append(f"{label}: {content}")
     return "\n".join(lines)
 
@@ -89,9 +89,9 @@ def generate_response(
 
     if conversation_history:
         history_text = _build_history_string(conversation_history)
-        full_prompt = f"{history_text}\nUser: {prompt}\nBot:"
+        full_prompt = f"{history_text}\nUser: {prompt}\nAssistant:"
     else:
-        full_prompt = prompt
+        full_prompt = f"User: {prompt}\nAssistant:"
 
     prompt_ids = encoding.encode(full_prompt)
     max_prompt_tokens = max(1, model.config.block_size - max_new_tokens - 10)
@@ -116,7 +116,7 @@ def generate_response(
     new_ids = out_ids[0][len(prompt_ids) :].tolist()
     response = encoding.decode(new_ids)
 
-    for stop_phrase in ("User:", "\nUser", "<|endoftext|>"):
+    for stop_phrase in ("User:", "\nUser:", "Assistant:", "\nAssistant:", "<|endoftext|>"):
         if stop_phrase in response:
             response = response[: response.index(stop_phrase)]
 

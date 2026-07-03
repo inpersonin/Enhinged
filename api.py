@@ -6,6 +6,7 @@ import os
 from typing import Literal, Optional
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from config import DEFAULT_CHECKPOINT_PATH
@@ -19,6 +20,15 @@ from inference import (
 
 app = FastAPI(title="Enhinged API", version="1.0.0")
 DEFAULT_API_CHECKPOINT = os.getenv("ENHINGED_CKPT_PATH", DEFAULT_CHECKPOINT_PATH)
+CORS_ORIGINS = [origin.strip() for origin in os.getenv("ENHINGED_CORS_ORIGINS", "*").split(",") if origin.strip()]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=CORS_ORIGINS or ["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class ChatTurn(BaseModel):
@@ -39,7 +49,7 @@ class GenerateRequest(BaseModel):
 
 
 class LoadRequest(BaseModel):
-    checkpoint_path: str = DEFAULT_CHECKPOINT_PATH
+    checkpoint_path: str = DEFAULT_API_CHECKPOINT
 
 
 @app.on_event("startup")
