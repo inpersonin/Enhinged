@@ -5,7 +5,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 DEFAULT_TOKENIZER_NAME = "gpt2"
+import os
 DEFAULT_CHECKPOINT_PATH = "checkpoints/best.pt"
+if not os.path.exists(DEFAULT_CHECKPOINT_PATH) and os.path.exists("best.pt"):
+    DEFAULT_CHECKPOINT_PATH = "best.pt"
 DEFAULT_DATA_DIR = "data"
 DEFAULT_OUTPUT_DIR = "checkpoints"
 SUPPORTED_PRETRAINED_MODELS = ("gpt2", "gpt2-medium", "gpt2-large", "gpt2-xl")
