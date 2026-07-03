@@ -1,3 +1,13 @@
+---
+title: Enhinged
+emoji: 💬
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # Enhinged
 
 Enhinged is a GPT-2 style conversational language model trained from scratch on Hinglish conversational data. The repository is backend-only and is organized for training, checkpointing, preprocessing, and FastAPI-based inference.
