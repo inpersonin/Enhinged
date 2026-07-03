@@ -21,7 +21,7 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          huggingface-cli upload inpersonin/enhinged ./ --repo-type space \
+          huggingface-cli upload inpersonin/Enhinged ./ --repo-type space --token $HF_TOKEN \
             --exclude "frontend-template/*" \
             --exclude ".template_extract/*" \
             --exclude "node_modules/*" \
