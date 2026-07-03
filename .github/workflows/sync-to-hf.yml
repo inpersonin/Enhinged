@@ -21,23 +21,42 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          huggingface-cli upload inpersonin/Enhinged ./ --repo-type space --token $HF_TOKEN \
-            --exclude "frontend-template/*" \
-            --exclude ".template_extract/*" \
-            --exclude "node_modules/*" \
-            --exclude ".next/*" \
-            --exclude "out/*" \
-            --exclude "app/*" \
-            --exclude "components/*" \
-            --exclude "hooks/*" \
-            --exclude "lib/*" \
-            --exclude "styles/*" \
-            --exclude "public/*" \
-            --exclude "*.json" \
-            --exclude "*.mjs" \
-            --exclude "*.tsx" \
-            --exclude "*.ts" \
-            --exclude "index.html" \
-            --exclude ".vscode/*" \
-            --exclude ".git/*" \
-            --exclude ".github/*"
+          python -c "
+          import os
+          from huggingface_hub import HfApi
+          
+          token = os.environ.get('HF_TOKEN')
+          if not token:
+              raise ValueError('HF_TOKEN secret is not set or empty')
+              
+          api = HfApi(token=token)
+          print('Starting upload to Hugging Face Space...')
+          api.upload_folder(
+              folder_path='.',
+              repo_id='inpersonin/Enhinged',
+              repo_type='space',
+              ignore_patterns=[
+                  'frontend-template/**',
+                  '.template_extract/**',
+                  'node_modules/**',
+                  '.next/**',
+                  'out/**',
+                  'app/**',
+                  'components/**',
+                  'hooks/**',
+                  'lib/**',
+                  'styles/**',
+                  'public/**',
+                  '*.json',
+                  '*.mjs',
+                  '*.tsx',
+                  '*.ts',
+                  'index.html',
+                  '.vscode/**',
+                  '.git/**',
+                  '.github/**'
+              ]
+          )
+          print('Upload completed successfully!')
+          "
+
