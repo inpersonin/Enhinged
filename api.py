@@ -21,6 +21,7 @@ from inference import (
 app = FastAPI(title="Enhinged API", version="1.0.0")
 DEFAULT_API_CHECKPOINT = os.getenv("ENHINGED_CKPT_PATH", DEFAULT_CHECKPOINT_PATH)
 CORS_ORIGINS = [origin.strip() for origin in os.getenv("ENHINGED_CORS_ORIGINS", "*").split(",") if origin.strip()]
+STARTUP_ERROR: Optional[str] = None
 
 app.add_middleware(
     CORSMiddleware,
@@ -52,9 +53,19 @@ class LoadRequest(BaseModel):
     checkpoint_path: str = DEFAULT_API_CHECKPOINT
 
 
+def _ensure_model_loaded() -> None:
+    if is_model_loaded():
+        return
+    load_model(DEFAULT_API_CHECKPOINT)
+
+
 @app.on_event("startup")
 def startup() -> None:
-    load_model(DEFAULT_API_CHECKPOINT)
+    global STARTUP_ERROR
+    try:
+        _ensure_model_loaded()
+    except Exception as exc:
+        STARTUP_ERROR = str(exc)
 
 
 @app.on_event("shutdown")
@@ -73,12 +84,14 @@ def health() -> dict:
         "status": "ok",
         "model_loaded": is_model_loaded(),
         "checkpoint_path": get_loaded_checkpoint_path(),
+        "startup_error": STARTUP_ERROR,
     }
 
 
 @app.post("/generate")
 def generate(payload: GenerateRequest) -> dict:
     try:
+        _ensure_model_loaded()
         response = generate_response(
             prompt=payload.prompt,
             max_new_tokens=payload.max_new_tokens,
@@ -98,8 +111,10 @@ def generate(payload: GenerateRequest) -> dict:
 
 @app.post("/load")
 def reload_model(payload: LoadRequest) -> dict:
+    global STARTUP_ERROR
     try:
         load_model(payload.checkpoint_path)
+        STARTUP_ERROR = None
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
     return {"status": "loaded", "checkpoint_path": get_loaded_checkpoint_path()}

@@ -8,25 +8,31 @@
     <style>
       :root {
         --bg: #050505;
-        --panel: rgba(12, 12, 12, 0.82);
+        --panel: rgba(11, 11, 11, 0.84);
         --panel-border: rgba(255, 255, 255, 0.12);
         --text: rgba(255, 255, 255, 0.96);
         --muted: rgba(255, 255, 255, 0.62);
         --line: rgba(255, 255, 255, 0.08);
         --accent: #2563eb;
         --accent-soft: rgba(37, 99, 235, 0.18);
-        --shadow: 0 30px 120px rgba(0, 0, 0, 0.55);
+        --shadow: 0 28px 100px rgba(0, 0, 0, 0.5);
       }
 
-      * { box-sizing: border-box; }
-      html { scroll-behavior: smooth; }
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
       body {
         margin: 0;
         min-height: 100vh;
         font-family: Georgia, "Times New Roman", serif;
         color: var(--text);
         background:
-          radial-gradient(circle at 18% 18%, rgba(37, 99, 235, 0.18), transparent 22%),
+          radial-gradient(circle at 18% 18%, rgba(37, 99, 235, 0.16), transparent 22%),
           radial-gradient(circle at 82% 12%, rgba(255, 255, 255, 0.08), transparent 16%),
           radial-gradient(circle at 74% 72%, rgba(37, 99, 235, 0.12), transparent 20%),
           var(--bg);
@@ -42,16 +48,50 @@
         background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
       }
 
+      .grid {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.18;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+        background-size: 48px 48px;
+      }
+
+      .orb {
+        position: fixed;
+        left: 12%;
+        top: 14%;
+        width: 28rem;
+        height: 28rem;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(37, 99, 235, 0.42) 0%, rgba(37, 99, 235, 0.14) 34%, transparent 72%);
+        filter: blur(40px);
+        pointer-events: none;
+        animation: pulse 9s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 0.7;
+        }
+        50% {
+          transform: scale(1.05);
+          opacity: 1;
+        }
+      }
+
       .nav {
         position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
+        inset: 0 0 auto 0;
         z-index: 20;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 20px 28px;
+        padding: 18px 26px;
         transition: background 180ms ease, backdrop-filter 180ms ease, border-color 180ms ease;
       }
 
@@ -63,9 +103,11 @@
 
       .brand,
       .navlink,
-      .ghost,
       .chip,
-      .send {
+      .send,
+      .ghost,
+      .step,
+      .stat-label {
         font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
       }
 
@@ -78,13 +120,12 @@
 
       .navlinks {
         display: flex;
-        gap: 24px;
-        color: rgba(255, 255, 255, 0.62);
+        gap: 20px;
       }
 
       .navlink {
         text-decoration: none;
-        color: inherit;
+        color: rgba(255, 255, 255, 0.62);
         font-size: 11px;
         letter-spacing: 0.28em;
       }
@@ -108,30 +149,33 @@
 
       .hero {
         min-height: 100vh;
-        padding: 104px 20px 24px;
+        padding: 102px 20px 28px;
         position: relative;
       }
 
-      .shell {
+      .shell,
+      .section {
         max-width: 1280px;
         margin: 0 auto;
-        min-height: calc(100vh - 128px);
+      }
+
+      .shell {
+        min-height: calc(100vh - 126px);
         display: grid;
-        grid-template-columns: 1.12fr 0.88fr;
-        gap: 32px;
         align-items: center;
       }
 
-      .eyebrow {
+      .eyebrow,
+      .section-label {
         font-size: 11px;
         letter-spacing: 0.35em;
         color: rgba(255, 255, 255, 0.56);
-        margin: 0 0 18px;
+        margin: 0 0 16px;
       }
 
       h1 {
         margin: 0;
-        font-size: clamp(52px, 8vw, 96px);
+        font-size: clamp(48px, 7vw, 88px);
         line-height: 0.92;
         font-weight: 400;
         letter-spacing: -0.04em;
@@ -144,34 +188,38 @@
       }
 
       .lede {
-        max-width: 620px;
+        max-width: 640px;
         color: var(--muted);
         font-size: 16px;
         line-height: 1.7;
-        margin: 20px 0 0;
+        margin: 18px 0 0;
       }
 
-      .metrics {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 12px;
-        margin-top: 28px;
-      }
-
-      .metric,
-      .chat {
+      .glass {
         background: linear-gradient(180deg, rgba(15, 15, 15, 0.82), rgba(8, 8, 8, 0.72));
         border: 1px solid var(--panel-border);
         backdrop-filter: blur(18px);
         box-shadow: var(--shadow);
       }
 
-      .metric {
-        border-radius: 20px;
-        padding: 16px;
+      .metrics-wrap {
+        margin-top: 26px;
+        display: grid;
+        gap: 14px;
       }
 
-      .metric span {
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .metric {
+        border-radius: 20px;
+        padding: 15px 16px;
+      }
+
+      .metric .stat-label {
         display: block;
         font-size: 10px;
         letter-spacing: 0.28em;
@@ -182,12 +230,92 @@
       .metric strong {
         display: block;
         margin-top: 10px;
-        font-size: 28px;
+        font-size: 25px;
         font-weight: 500;
       }
 
+      .flow-grid {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 12px;
+      }
+
+      .flow-card {
+        border-radius: 20px;
+        padding: 15px 16px;
+      }
+
+      .flow-card h2,
+      .chat-head h2,
+      .module h2 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+      }
+
+      .flow-card p,
+      .module p,
+      .side-note p,
+      .section-copy p {
+        margin: 8px 0 0;
+        color: rgba(255, 255, 255, 0.66);
+        line-height: 1.55;
+        font-size: 13px;
+      }
+
+      .steps {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .step {
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 10px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.74);
+      }
+
+      .section {
+        padding: 0 20px 86px;
+      }
+
+      .section-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        align-items: stretch;
+      }
+
+      .module {
+        border-radius: 24px;
+        padding: 20px;
+      }
+
+      .module .tag {
+        margin: 0 0 12px;
+        font-size: 10px;
+        letter-spacing: 0.28em;
+        color: rgba(255, 255, 255, 0.46);
+        text-transform: uppercase;
+      }
+
+      .module ul {
+        margin: 14px 0 0;
+        padding: 0 0 0 18px;
+        color: rgba(255, 255, 255, 0.8);
+        line-height: 1.8;
+        font-size: 14px;
+      }
+
       .chat {
-        border-radius: 34px;
+        border-radius: 32px;
         overflow: hidden;
         position: relative;
       }
@@ -206,7 +334,7 @@
       .chat-foot {
         position: relative;
         z-index: 1;
-        padding: 18px 20px;
+        padding: 16px 18px;
         border-color: var(--line);
       }
 
@@ -215,6 +343,7 @@
         justify-content: space-between;
         align-items: center;
         border-bottom: 1px solid var(--line);
+        gap: 12px;
       }
 
       .badge {
@@ -224,8 +353,8 @@
       }
 
       .badge-icon {
-        width: 42px;
-        height: 42px;
+        width: 40px;
+        height: 40px;
         border-radius: 16px;
         display: grid;
         place-items: center;
@@ -264,19 +393,19 @@
       .messages {
         position: relative;
         z-index: 1;
-        height: 452px;
+        height: 336px;
         overflow-y: auto;
-        padding: 18px 20px;
+        padding: 16px 18px;
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        gap: 12px;
       }
 
       .msg {
         max-width: 86%;
-        padding: 14px 16px;
-        border-radius: 22px;
-        font-size: 15px;
+        padding: 13px 15px;
+        border-radius: 20px;
+        font-size: 14px;
         line-height: 1.55;
         white-space: pre-wrap;
         word-break: break-word;
@@ -310,21 +439,33 @@
         animation: bob 900ms infinite ease-in-out;
       }
 
-      .typing i:nth-child(2) { animation-delay: 140ms; }
-      .typing i:nth-child(3) { animation-delay: 280ms; }
+      .typing i:nth-child(2) {
+        animation-delay: 140ms;
+      }
+
+      .typing i:nth-child(3) {
+        animation-delay: 280ms;
+      }
 
       @keyframes bob {
-        0%, 100% { transform: translateY(0); opacity: 0.45; }
-        50% { transform: translateY(-4px); opacity: 1; }
+        0%,
+        100% {
+          transform: translateY(0);
+          opacity: 0.45;
+        }
+        50% {
+          transform: translateY(-4px);
+          opacity: 1;
+        }
       }
 
       .chips {
         position: relative;
         z-index: 1;
         display: flex;
-        gap: 10px;
+        gap: 8px;
         overflow-x: auto;
-        padding: 0 20px 16px;
+        padding: 0 18px 14px;
       }
 
       .chip,
@@ -336,19 +477,19 @@
 
       .chip {
         flex: 0 0 auto;
-        padding: 10px 14px;
+        padding: 9px 12px;
         border-radius: 999px;
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.08);
         color: rgba(255, 255, 255, 0.74);
-        font-size: 10px;
-        letter-spacing: 0.2em;
+        font-size: 9px;
+        letter-spacing: 0.18em;
         text-transform: uppercase;
       }
 
       .chat-foot {
         display: flex;
-        gap: 12px;
+        gap: 10px;
         align-items: center;
         border-top: 1px solid var(--line);
       }
@@ -359,9 +500,9 @@
         border: 1px solid rgba(255, 255, 255, 0.1);
         background: rgba(0, 0, 0, 0.42);
         color: var(--text);
-        padding: 16px 16px;
+        padding: 15px 16px;
         font: inherit;
-        font-size: 15px;
+        font-size: 14px;
         outline: none;
       }
 
@@ -374,12 +515,24 @@
       }
 
       .send {
-        width: 54px;
-        height: 54px;
+        width: 52px;
+        height: 52px;
         border-radius: 18px;
         background: var(--accent);
         color: white;
         font-size: 18px;
+      }
+
+      .side-note {
+        margin-top: 18px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .side-note .glass {
+        border-radius: 18px;
+        padding: 14px 16px;
       }
 
       .footer {
@@ -410,50 +563,58 @@
         background: rgba(255, 255, 255, 0.05);
       }
 
-      .grid {
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        opacity: 0.22;
-        background-image:
-          linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-        background-size: 48px 48px;
+      @media (max-width: 1100px) {
+        .metrics,
+        .section-grid,
+        .flow-grid,
+        .side-note {
+          grid-template-columns: 1fr;
+        }
+
+        .messages {
+          height: 300px;
+        }
       }
 
-      .orb {
-        position: absolute;
-        left: 12%;
-        top: 14%;
-        width: 32rem;
-        height: 32rem;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(37, 99, 235, 0.4) 0%, rgba(37, 99, 235, 0.14) 34%, transparent 72%);
-        filter: blur(38px);
-        animation: pulse 9s ease-in-out infinite;
-        pointer-events: none;
-      }
+      @media (max-width: 760px) {
+        .nav {
+          padding-inline: 16px;
+        }
 
-      @keyframes pulse {
-        0%, 100% { transform: scale(1); opacity: 0.7; }
-        50% { transform: scale(1.05); opacity: 1; }
-      }
+        .navlinks {
+          display: none;
+        }
 
-      @media (max-width: 1080px) {
-        .shell { grid-template-columns: 1fr; }
-        .messages { height: 400px; }
-      }
+        .hero,
+        .section {
+          padding-inline: 16px;
+        }
 
-      @media (max-width: 720px) {
-        .nav { padding-inline: 16px; }
-        .navlinks { display: none; }
-        .hero { padding-inline: 16px; }
-        .shell { min-height: auto; gap: 20px; }
-        .metrics { grid-template-columns: 1fr 1fr; }
-        .messages { height: 360px; }
-        .footer { flex-direction: column; align-items: start; }
-        h1 { font-size: clamp(42px, 12vw, 64px); }
-        .msg { max-width: 92%; }
+        .shell {
+          min-height: auto;
+          gap: 18px;
+        }
+
+        .metrics {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .messages {
+          height: 290px;
+        }
+
+        .msg {
+          max-width: 92%;
+        }
+
+        h1 {
+          font-size: clamp(40px, 12vw, 62px);
+        }
+
+        .footer {
+          flex-direction: column;
+          align-items: start;
+        }
       }
     </style>
   </head>
@@ -462,44 +623,108 @@
     <div class="orb" aria-hidden="true"></div>
 
     <header class="nav" id="nav">
-      <a class="brand" href="#demo">ENHINGED</a>
+      <a class="brand" href="#hero">ENHINGED</a>
       <nav class="navlinks" aria-label="Section links">
-        <a class="navlink" href="#demo">01 DEMO</a>
-        <a class="navlink" href="#metrics">02 METRICS</a>
-        <a class="navlink" href="#deploy">03 DEPLOY</a>
+        <a class="navlink" href="#hero">HERO</a>
+        <a class="navlink" href="#architecture">ARCHITECTURE</a>
+        <a class="navlink" href="#chat">CHAT</a>
       </nav>
       <div class="status"><span class="dot"></span><span>HF SPACE LIVE</span></div>
     </header>
 
-    <main class="hero">
-      <section class="shell" id="demo">
-        <div>
-          <p class="eyebrow">01 — BRUTAL VOID / GLASS INTERFACE</p>
-          <h1>
-            ENHINGED<br />
-            <em>Hinglish chat</em><br />
-            without the scroll.
-          </h1>
-          <p class="lede">
-            Brutalist void styling, a restrained glass card, and the live HF Space backend. The input sits in the hero
-            itself, so the user can chat immediately.
-          </p>
+    <main>
+      <section class="hero" id="hero">
+        <div class="shell">
+          <div>
+            <p class="eyebrow">BRUTAL VOID / GLASS INTERFACE</p>
+            <h1>ENHINGED<br /><em>Hinglish chat</em><br />without the scroll.</h1>
+            <p class="lede">A longer one-page layout with the hero focused only on the introduction. The chatbot moves below, and the sections underneath show the model architecture, flow, and deployment path.</p>
 
-          <div class="metrics" id="metrics">
-            <div class="metric"><span>params</span><strong>30.04M</strong></div>
-            <div class="metric"><span>best val loss</span><strong>1.4363</strong></div>
-            <div class="metric"><span>training iters</span><strong>5000</strong></div>
-            <div class="metric"><span>context window</span><strong>256</strong></div>
+            <div class="metrics-wrap" id="metrics">
+              <div class="metrics">
+                <div class="metric glass"><span class="stat-label">params</span><strong>30.04M</strong></div>
+                <div class="metric glass"><span class="stat-label">best val loss</span><strong>1.4363</strong></div>
+                <div class="metric glass"><span class="stat-label">layers</span><strong>6</strong></div>
+                <div class="metric glass"><span class="stat-label">context</span><strong>256</strong></div>
+              </div>
+            </div>
           </div>
         </div>
+      </section>
 
-        <section class="chat" aria-label="Chat demo">
+      <section class="section" id="architecture">
+        <p class="section-label">01 — MODEL ARCHITECTURE</p>
+        <div class="section-grid">
+          <article class="module glass">
+            <h2>Architecture</h2>
+            <p>GPT-2 style nanoGPT stack with token and position embeddings, masked multi-head attention, feed-forward blocks, residual connections, and tied input/output embeddings.</p>
+            <ul>
+              <li><strong>block_size</strong> = 256</li>
+              <li><strong>n_layer</strong> = 6</li>
+              <li><strong>n_head</strong> = 6</li>
+              <li><strong>n_embd</strong> = 384</li>
+            </ul>
+          </article>
+          <article class="module glass">
+            <h2>Training Snapshot</h2>
+            <p>The checkpoint matches the metrics file and represents the best validation point from the 5000-iteration run.</p>
+            <ul>
+              <li><strong>best_val_loss</strong> = 1.4363</li>
+              <li><strong>best_val_perplexity</strong> = 4.2</li>
+              <li><strong>checkpoint</strong> = checkpoints/best.pt</li>
+              <li><strong>dataset</strong> = Hinglish-Everyday-Conversations-1M</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="side-note">
+          <div class="glass module">
+            <h2>Model Flow</h2>
+            <p>Prompt enters as GPT-2 BPE tokens, moves through the transformer blocks, and the decoder samples the next assistant token autoregressively.</p>
+          </div>
+          <div class="glass module">
+            <h2>Serving Flow</h2>
+            <p>GitHub Pages hosts the static site. The HF Space FastAPI backend loads the checkpoint and answers the `/generate` request.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="workflow">
+        <p class="section-label">02 — WORKFLOW</p>
+        <div class="section-grid">
+          <article class="module glass">
+            <h2>Inference Path</h2>
+            <div class="steps">
+              <span class="step">User prompt</span>
+              <span class="step">GPT-2 BPE</span>
+              <span class="step">256-token context</span>
+              <span class="step">Transformer blocks</span>
+              <span class="step">Assistant reply</span>
+            </div>
+            <p style="margin-top: 14px;">The backend reformats conversation history using the same speaker labels as the corpus so the model sees the training pattern it learned on.</p>
+          </article>
+          <article class="module glass">
+            <h2>Backend Resilience</h2>
+            <p>The API now exposes startup health and lazy-loads the checkpoint so a transient model-load failure does not kill the whole HF Space process.</p>
+            <ul>
+              <li><strong>/health</strong> reports startup error state</li>
+              <li><strong>/generate</strong> loads on demand if needed</li>
+              <li><strong>/load</strong> can swap checkpoints</li>
+              <li><strong>CORS</strong> is open for GitHub Pages</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="chat">
+        <p class="section-label">03 — CHAT DEMO</p>
+        <div class="chat glass" aria-label="Chat demo">
           <div class="chat-head">
             <div class="badge">
               <div class="badge-icon">✦</div>
               <div>
                 <p class="mini">HF SPACE CHAT</p>
-                <p class="big">Model is loaded and ready to answer.</p>
+                <p class="big">Model is ready to answer.</p>
               </div>
             </div>
             <div class="pill" id="status">ready</div>
@@ -513,26 +738,37 @@
             <button class="chip" data-suggestion="Explain attention in Hinglish">Explain attention in Hinglish</button>
             <button class="chip" data-suggestion="Mujhe ek short reply likh do">Mujhe ek short reply likh do</button>
             <button class="chip" data-suggestion="How was this model trained?">How was this model trained?</button>
-            <button class="chip" data-suggestion="Ek funny line bolo">Ek funny line bolo</button>
           </div>
 
           <form class="chat-foot" id="form">
             <input class="input" id="prompt" type="text" placeholder="Type a prompt in Hindi, English, or Hinglish..." aria-label="Message Enhinged" />
             <button class="send" type="submit" aria-label="Send message">↗</button>
           </form>
-        </section>
+        </div>
       </section>
 
-      <div class="footer">
-        <div>
-          <p class="eyebrow">02 — DEPLOYMENT</p>
-          <p>Frontend on GitHub Pages. Backend on Hugging Face Spaces. Same theme, same tone, same model.</p>
+      <section class="section" id="deployment">
+        <p class="section-label">04 — DEPLOYMENT</p>
+        <div class="section-grid">
+          <article class="module glass">
+            <h2>Frontend</h2>
+            <p>Static GitHub Pages site with a long scrolling layout, brutalist styling, and the chat input positioned below the hero.</p>
+          </article>
+          <article class="module glass">
+            <h2>Backend</h2>
+            <p>HF Space FastAPI server that loads the checkpoint, serves `/generate`, and exposes `/health` for monitoring.</p>
+          </article>
         </div>
-        <a class="ghost" id="deploy" href="https://inpersonin-enhinged.hf.space" target="_blank" rel="noreferrer">
-          Open HF Space <span>↗</span>
-        </a>
-      </div>
+      </section>
     </main>
+
+    <footer class="footer">
+      <div>
+        <p class="eyebrow">ENHINGED</p>
+        <p>Brutalist interface, compact glass panels, and a live Hinglish model backend.</p>
+      </div>
+      <a class="ghost" href="https://inpersonin-enhinged.hf.space" target="_blank" rel="noreferrer">Open HF Space ↗</a>
+    </footer>
 
     <script>
       const apiBase = "https://inpersonin-enhinged.hf.space"
@@ -540,15 +776,10 @@
       const form = document.getElementById("form")
       const prompt = document.getElementById("prompt")
       const status = document.getElementById("status")
+      const nav = document.getElementById("nav")
 
-      const scrollBottom = () => {
-        messages.scrollTo({ top: messages.scrollHeight, behavior: "smooth" })
-      }
-
-      const setStatus = (value) => {
-        status.textContent = value
-      }
-
+      const scrollBottom = () => messages.scrollTo({ top: messages.scrollHeight, behavior: "smooth" })
+      const setStatus = (value) => { status.textContent = value }
       const addMessage = (text, role) => {
         const node = document.createElement("div")
         node.className = `msg ${role}`
@@ -557,7 +788,6 @@
         scrollBottom()
         return node
       }
-
       const addTyping = () => {
         const node = document.createElement("div")
         node.className = "msg bot"
@@ -566,16 +796,17 @@
         scrollBottom()
         return node
       }
-
+      const getHistory = () => Array.from(messages.querySelectorAll(".msg")).slice(-8).map((node) => ({
+        role: node.classList.contains("user") ? "user" : "assistant",
+        content: node.textContent || "",
+      }))
       const send = async (text) => {
         const trimmed = text.trim()
         if (!trimmed) return
-
         addMessage(trimmed, "user")
         prompt.value = ""
         setStatus("thinking")
         const typing = addTyping()
-
         try {
           const response = await fetch(`${apiBase}/generate`, {
             method: "POST",
@@ -588,39 +819,27 @@
               top_p: 0.95,
               repetition_penalty: 1.08,
               do_sample: true,
-              conversation_history: Array.from(messages.querySelectorAll(".msg")).slice(-8).map((node) => {
-                const isUser = node.classList.contains("user")
-                return { role: isUser ? "user" : "assistant", content: node.textContent || "" }
-              }),
+              conversation_history: getHistory(),
             }),
           })
-
           if (!response.ok) throw new Error("request failed")
           const data = await response.json()
           typing.remove()
           addMessage((data.response || "No response returned.").trim() || "No response returned.", "bot")
           setStatus("connected")
-        } catch (error) {
+        } catch {
           typing.remove()
           addMessage("Backend unavailable right now. Check the HF Space URL or CORS settings.", "bot")
           setStatus("error")
         }
       }
-
-      form.addEventListener("submit", (event) => {
-        event.preventDefault()
-        send(prompt.value)
-      })
-
+      form.addEventListener("submit", (event) => { event.preventDefault(); send(prompt.value) })
       document.getElementById("chips").addEventListener("click", (event) => {
         const button = event.target.closest("button[data-suggestion]")
         if (!button) return
         send(button.dataset.suggestion || "")
       })
-
-      window.addEventListener("scroll", () => {
-        document.getElementById("nav").classList.toggle("scrolled", window.scrollY > 20)
-      })
+      window.addEventListener("scroll", () => nav.classList.toggle("scrolled", window.scrollY > 20))
     </script>
   </body>
 </html>
