@@ -2,7 +2,7 @@ name: Deploy GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -11,8 +11,8 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -20,22 +20,27 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
+      
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 24
-
+          node-version: "24"
+          
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+        with:
+          static_site_generator: next
+          
       - name: Install dependencies
         run: npm install
-
-      - name: Build site
+        
+      - name: Build with Next.js
         run: npm run build
         env:
           NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
           NEXT_PUBLIC_API_URL: https://inpersonin-enhinged.hf.space
-
-      - name: Upload pages artifact
+          
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./out
