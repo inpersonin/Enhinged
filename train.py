@@ -126,7 +126,10 @@ class Trainer:
         return path
 
     def load_checkpoint(self, path: str) -> None:
-        checkpoint = torch.load(path, map_location=self.device)
+        try:
+            checkpoint = torch.load(path, map_location=self.device, weights_only=False)
+        except TypeError:
+            checkpoint = torch.load(path, map_location=self.device)
         self.model.load_state_dict(checkpoint["model_state"])
         self.optimiser.load_state_dict(checkpoint["optimiser_state"])
         self.iter_num = checkpoint["iter_num"]

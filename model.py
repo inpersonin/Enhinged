@@ -324,7 +324,10 @@ def load_model_from_checkpoint(
     """Load a trained Enhinged checkpoint."""
 
     resolved_device = _resolve_device(device)
-    checkpoint = torch.load(ckpt_path, map_location=resolved_device)
+    try:
+        checkpoint = torch.load(ckpt_path, map_location=resolved_device, weights_only=False)
+    except TypeError:
+        checkpoint = torch.load(ckpt_path, map_location=resolved_device)
     model = HinglishGPT(GPTConfig(**checkpoint["model_config"]))
     model.load_state_dict(checkpoint["model_state"])
     model.to(resolved_device)
