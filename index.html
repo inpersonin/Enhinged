@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#050505" />
+    <title>Enhinged | Brutalist Chat</title>
+    <style>
+      :root {
+        --bg: #050505;
+        --panel: rgba(12, 12, 12, 0.82);
+        --panel-border: rgba(255, 255, 255, 0.12);
+        --text: rgba(255, 255, 255, 0.96);
+        --muted: rgba(255, 255, 255, 0.62);
+        --line: rgba(255, 255, 255, 0.08);
+        --accent: #2563eb;
+        --accent-soft: rgba(37, 99, 235, 0.18);
+        --shadow: 0 30px 120px rgba(0, 0, 0, 0.55);
+      }
+
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Georgia, "Times New Roman", serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at 18% 18%, rgba(37, 99, 235, 0.18), transparent 22%),
+          radial-gradient(circle at 82% 12%, rgba(255, 255, 255, 0.08), transparent 16%),
+          radial-gradient(circle at 74% 72%, rgba(37, 99, 235, 0.12), transparent 20%),
+          var(--bg);
+        overflow-x: hidden;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.03;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      }
+
+      .nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 20;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 28px;
+        transition: background 180ms ease, backdrop-filter 180ms ease, border-color 180ms ease;
+      }
+
+      .nav.scrolled {
+        background: rgba(0, 0, 0, 0.58);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(18px);
+      }
+
+      .brand,
+      .navlink,
+      .ghost,
+      .chip,
+      .send {
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      }
+
+      .brand {
+        letter-spacing: 0.34em;
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.72);
+        text-decoration: none;
+      }
+
+      .navlinks {
+        display: flex;
+        gap: 24px;
+        color: rgba(255, 255, 255, 0.62);
+      }
+
+      .navlink {
+        text-decoration: none;
+        color: inherit;
+        font-size: 11px;
+        letter-spacing: 0.28em;
+      }
+
+      .status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: rgba(255, 255, 255, 0.56);
+        font-size: 10px;
+        letter-spacing: 0.3em;
+      }
+
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--accent);
+        box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.12);
+      }
+
+      .hero {
+        min-height: 100vh;
+        padding: 104px 20px 24px;
+        position: relative;
+      }
+
+      .shell {
+        max-width: 1280px;
+        margin: 0 auto;
+        min-height: calc(100vh - 128px);
+        display: grid;
+        grid-template-columns: 1.12fr 0.88fr;
+        gap: 32px;
+        align-items: center;
+      }
+
+      .eyebrow {
+        font-size: 11px;
+        letter-spacing: 0.35em;
+        color: rgba(255, 255, 255, 0.56);
+        margin: 0 0 18px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(52px, 8vw, 96px);
+        line-height: 0.92;
+        font-weight: 400;
+        letter-spacing: -0.04em;
+        text-wrap: balance;
+      }
+
+      h1 em {
+        font-style: italic;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .lede {
+        max-width: 620px;
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.7;
+        margin: 20px 0 0;
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 28px;
+      }
+
+      .metric,
+      .chat {
+        background: linear-gradient(180deg, rgba(15, 15, 15, 0.82), rgba(8, 8, 8, 0.72));
+        border: 1px solid var(--panel-border);
+        backdrop-filter: blur(18px);
+        box-shadow: var(--shadow);
+      }
+
+      .metric {
+        border-radius: 20px;
+        padding: 16px;
+      }
+
+      .metric span {
+        display: block;
+        font-size: 10px;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.46);
+      }
+
+      .metric strong {
+        display: block;
+        margin-top: 10px;
+        font-size: 28px;
+        font-weight: 500;
+      }
+
+      .chat {
+        border-radius: 34px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .chat::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(circle at top left, rgba(37, 99, 235, 0.16), transparent 36%),
+          radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.05), transparent 28%);
+        pointer-events: none;
+      }
+
+      .chat-head,
+      .chat-foot {
+        position: relative;
+        z-index: 1;
+        padding: 18px 20px;
+        border-color: var(--line);
+      }
+
+      .chat-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .badge-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 16px;
+        display: grid;
+        place-items: center;
+        background: var(--accent-soft);
+        color: #9bb7ff;
+      }
+
+      .badge p {
+        margin: 0;
+      }
+
+      .badge .mini {
+        font-size: 10px;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.46);
+      }
+
+      .badge .big {
+        margin-top: 4px;
+        font-size: 15px;
+        color: rgba(255, 255, 255, 0.85);
+      }
+
+      .pill {
+        border: 1px solid var(--panel-border);
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 10px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.72);
+      }
+
+      .messages {
+        position: relative;
+        z-index: 1;
+        height: 452px;
+        overflow-y: auto;
+        padding: 18px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .msg {
+        max-width: 86%;
+        padding: 14px 16px;
+        border-radius: 22px;
+        font-size: 15px;
+        line-height: 1.55;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .msg.user {
+        margin-left: auto;
+        background: var(--accent);
+        color: white;
+        border-bottom-right-radius: 8px;
+      }
+
+      .msg.bot {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.92);
+        border-bottom-left-radius: 8px;
+      }
+
+      .typing {
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+      }
+
+      .typing i {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--accent);
+        animation: bob 900ms infinite ease-in-out;
+      }
+
+      .typing i:nth-child(2) { animation-delay: 140ms; }
+      .typing i:nth-child(3) { animation-delay: 280ms; }
+
+      @keyframes bob {
+        0%, 100% { transform: translateY(0); opacity: 0.45; }
+        50% { transform: translateY(-4px); opacity: 1; }
+      }
+
+      .chips {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 0 20px 16px;
+      }
+
+      .chip,
+      .send,
+      .ghost {
+        border: 0;
+        cursor: pointer;
+      }
+
+      .chip {
+        flex: 0 0 auto;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.74);
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+      }
+
+      .chat-foot {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        border-top: 1px solid var(--line);
+      }
+
+      .input {
+        flex: 1;
+        border-radius: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(0, 0, 0, 0.42);
+        color: var(--text);
+        padding: 16px 16px;
+        font: inherit;
+        font-size: 15px;
+        outline: none;
+      }
+
+      .input::placeholder {
+        color: rgba(255, 255, 255, 0.34);
+      }
+
+      .input:focus {
+        border-color: rgba(37, 99, 235, 0.8);
+      }
+
+      .send {
+        width: 54px;
+        height: 54px;
+        border-radius: 18px;
+        background: var(--accent);
+        color: white;
+        font-size: 18px;
+      }
+
+      .footer {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 20px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 20px;
+      }
+
+      .footer p {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.64);
+        line-height: 1.6;
+      }
+
+      .ghost {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        padding: 11px 15px;
+        color: rgba(255, 255, 255, 0.8);
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .grid {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.22;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+        background-size: 48px 48px;
+      }
+
+      .orb {
+        position: absolute;
+        left: 12%;
+        top: 14%;
+        width: 32rem;
+        height: 32rem;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(37, 99, 235, 0.4) 0%, rgba(37, 99, 235, 0.14) 34%, transparent 72%);
+        filter: blur(38px);
+        animation: pulse 9s ease-in-out infinite;
+        pointer-events: none;
+      }
+
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 0.7; }
+        50% { transform: scale(1.05); opacity: 1; }
+      }
+
+      @media (max-width: 1080px) {
+        .shell { grid-template-columns: 1fr; }
+        .messages { height: 400px; }
+      }
+
+      @media (max-width: 720px) {
+        .nav { padding-inline: 16px; }
+        .navlinks { display: none; }
+        .hero { padding-inline: 16px; }
+        .shell { min-height: auto; gap: 20px; }
+        .metrics { grid-template-columns: 1fr 1fr; }
+        .messages { height: 360px; }
+        .footer { flex-direction: column; align-items: start; }
+        h1 { font-size: clamp(42px, 12vw, 64px); }
+        .msg { max-width: 92%; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid"></div>
+    <div class="orb" aria-hidden="true"></div>
+
+    <header class="nav" id="nav">
+      <a class="brand" href="#demo">ENHINGED</a>
+      <nav class="navlinks" aria-label="Section links">
+        <a class="navlink" href="#demo">01 DEMO</a>
+        <a class="navlink" href="#metrics">02 METRICS</a>
+        <a class="navlink" href="#deploy">03 DEPLOY</a>
+      </nav>
+      <div class="status"><span class="dot"></span><span>HF SPACE LIVE</span></div>
+    </header>
+
+    <main class="hero">
+      <section class="shell" id="demo">
+        <div>
+          <p class="eyebrow">01 — BRUTAL VOID / GLASS INTERFACE</p>
+          <h1>
+            ENHINGED<br />
+            <em>Hinglish chat</em><br />
+            without the scroll.
+          </h1>
+          <p class="lede">
+            Brutalist void styling, a restrained glass card, and the live HF Space backend. The input sits in the hero
+            itself, so the user can chat immediately.
+          </p>
+
+          <div class="metrics" id="metrics">
+            <div class="metric"><span>params</span><strong>30.04M</strong></div>
+            <div class="metric"><span>best val loss</span><strong>1.4363</strong></div>
+            <div class="metric"><span>training iters</span><strong>5000</strong></div>
+            <div class="metric"><span>context window</span><strong>256</strong></div>
+          </div>
+        </div>
+
+        <section class="chat" aria-label="Chat demo">
+          <div class="chat-head">
+            <div class="badge">
+              <div class="badge-icon">✦</div>
+              <div>
+                <p class="mini">HF SPACE CHAT</p>
+                <p class="big">Model is loaded and ready to answer.</p>
+              </div>
+            </div>
+            <div class="pill" id="status">ready</div>
+          </div>
+
+          <div class="messages" id="messages" aria-live="polite">
+            <div class="msg bot">Main Enhinged hoon. Hindi, English, ya Hinglish me poochho — main backend se reply launga.</div>
+          </div>
+
+          <div class="chips" id="chips">
+            <button class="chip" data-suggestion="Explain attention in Hinglish">Explain attention in Hinglish</button>
+            <button class="chip" data-suggestion="Mujhe ek short reply likh do">Mujhe ek short reply likh do</button>
+            <button class="chip" data-suggestion="How was this model trained?">How was this model trained?</button>
+            <button class="chip" data-suggestion="Ek funny line bolo">Ek funny line bolo</button>
+          </div>
+
+          <form class="chat-foot" id="form">
+            <input class="input" id="prompt" type="text" placeholder="Type a prompt in Hindi, English, or Hinglish..." aria-label="Message Enhinged" />
+            <button class="send" type="submit" aria-label="Send message">↗</button>
+          </form>
+        </section>
+      </section>
+
+      <div class="footer">
+        <div>
+          <p class="eyebrow">02 — DEPLOYMENT</p>
+          <p>Frontend on GitHub Pages. Backend on Hugging Face Spaces. Same theme, same tone, same model.</p>
+        </div>
+        <a class="ghost" id="deploy" href="https://inpersonin-enhinged.hf.space" target="_blank" rel="noreferrer">
+          Open HF Space <span>↗</span>
+        </a>
+      </div>
+    </main>
+
+    <script>
+      const apiBase = "https://inpersonin-enhinged.hf.space"
+      const messages = document.getElementById("messages")
+      const form = document.getElementById("form")
+      const prompt = document.getElementById("prompt")
+      const status = document.getElementById("status")
+
+      const scrollBottom = () => {
+        messages.scrollTo({ top: messages.scrollHeight, behavior: "smooth" })
+      }
+
+      const setStatus = (value) => {
+        status.textContent = value
+      }
+
+      const addMessage = (text, role) => {
+        const node = document.createElement("div")
+        node.className = `msg ${role}`
+        node.textContent = text
+        messages.appendChild(node)
+        scrollBottom()
+        return node
+      }
+
+      const addTyping = () => {
+        const node = document.createElement("div")
+        node.className = "msg bot"
+        node.innerHTML = '<span class="typing" aria-label="Thinking"><i></i><i></i><i></i></span>'
+        messages.appendChild(node)
+        scrollBottom()
+        return node
+      }
+
+      const send = async (text) => {
+        const trimmed = text.trim()
+        if (!trimmed) return
+
+        addMessage(trimmed, "user")
+        prompt.value = ""
+        setStatus("thinking")
+        const typing = addTyping()
+
+        try {
+          const response = await fetch(`${apiBase}/generate`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              prompt: trimmed,
+              max_new_tokens: 160,
+              temperature: 0.82,
+              top_k: 40,
+              top_p: 0.95,
+              repetition_penalty: 1.08,
+              do_sample: true,
+              conversation_history: Array.from(messages.querySelectorAll(".msg")).slice(-8).map((node) => {
+                const isUser = node.classList.contains("user")
+                return { role: isUser ? "user" : "assistant", content: node.textContent || "" }
+              }),
+            }),
+          })
+
+          if (!response.ok) throw new Error("request failed")
+          const data = await response.json()
+          typing.remove()
+          addMessage((data.response || "No response returned.").trim() || "No response returned.", "bot")
+          setStatus("connected")
+        } catch (error) {
+          typing.remove()
+          addMessage("Backend unavailable right now. Check the HF Space URL or CORS settings.", "bot")
+          setStatus("error")
+        }
+      }
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault()
+        send(prompt.value)
+      })
+
+      document.getElementById("chips").addEventListener("click", (event) => {
+        const button = event.target.closest("button[data-suggestion]")
+        if (!button) return
+        send(button.dataset.suggestion || "")
+      })
+
+      window.addEventListener("scroll", () => {
+        document.getElementById("nav").classList.toggle("scrolled", window.scrollY > 20)
+      })
+    </script>
+  </body>
+</html>
