@@ -1,13 +1,27 @@
-"""Runtime inference helpers for Enhinged."""
+"""Runtime inference helpers for Enhinged.
+
+Model weights are stored in the HF Model repository `inpersonin/HinGPT`
+(not in the Space repo, which has a 1 GB storage cap). On first boot,
+`_resolve_checkpoint_path()` downloads `best.pt` from that repo and caches
+it to `/tmp/best.pt` inside the Docker container. Subsequent requests re-use
+the cached copy. The download is transparent — nothing in `api.py` or the
+calling code needs to change.
+"""
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from typing import Optional
 
 import torch
 
-from config import DEFAULT_CHECKPOINT_PATH
+from config import (
+    DEFAULT_CHECKPOINT_PATH,
+    HF_MODEL_CACHE_PATH,
+    HF_MODEL_FILENAME,
+    HF_MODEL_REPO,
+)
 from model import HinglishGPT, generate, load_model_from_checkpoint
 
 
@@ -22,14 +36,72 @@ class _RuntimeState:
 _STATE = _RuntimeState()
 
 
-def load_model(ckpt_path: str = DEFAULT_CHECKPOINT_PATH, device: Optional[torch.device] = None) -> None:
-    """Load a checkpoint into the shared inference runtime."""
+def _resolve_checkpoint_path(ckpt_path: str) -> str:
+    """Return a usable local path to the checkpoint.
 
-    model, encoding, resolved_device = load_model_from_checkpoint(ckpt_path, device)
+    Priority order:
+      1. The path given by the caller, if it exists on disk.
+      2. The HF-Space cache path (/tmp/best.pt), if already downloaded.
+      3. Download from `inpersonin/HinGPT` on HF Hub, cache to /tmp/best.pt.
+
+    This means the Space never needs `best.pt` in its own git repo
+    (which would push it over the 1 GB storage limit). On a cold boot,
+    the first request takes ~30-60 s while the file downloads; all
+    subsequent requests hit the in-memory model directly.
+    """
+
+    # 1. Caller gave us a file that exists — use it directly.
+    if os.path.exists(ckpt_path):
+        return ckpt_path
+
+    # 2. Already downloaded in a previous call this session.
+    if os.path.exists(HF_MODEL_CACHE_PATH):
+        print(f"inference: using cached checkpoint at {HF_MODEL_CACHE_PATH}")
+        return HF_MODEL_CACHE_PATH
+
+    # 3. Download from HF Hub.
+    print(
+        f"inference: checkpoint not found at '{ckpt_path}'. "
+        f"Downloading '{HF_MODEL_FILENAME}' from {HF_MODEL_REPO} …"
+    )
+    try:
+        from huggingface_hub import hf_hub_download
+
+        downloaded = hf_hub_download(
+            repo_id=HF_MODEL_REPO,
+            filename=HF_MODEL_FILENAME,
+            repo_type="model",
+            local_dir=os.path.dirname(HF_MODEL_CACHE_PATH) or "/tmp",
+            local_dir_use_symlinks=False,
+        )
+        # hf_hub_download may place it in a subdirectory; normalise.
+        if not os.path.exists(HF_MODEL_CACHE_PATH):
+            import shutil
+            shutil.copy2(downloaded, HF_MODEL_CACHE_PATH)
+        print(f"inference: download complete → {HF_MODEL_CACHE_PATH}")
+        return HF_MODEL_CACHE_PATH
+
+    except Exception as exc:
+        raise FileNotFoundError(
+            f"Could not find checkpoint at '{ckpt_path}' and failed to download "
+            f"from {HF_MODEL_REPO}/{HF_MODEL_FILENAME}: {exc}\n\n"
+            "Upload best.pt to https://huggingface.co/inpersonin/HinGPT first."
+        ) from exc
+
+
+def load_model(ckpt_path: str = DEFAULT_CHECKPOINT_PATH, device: Optional[torch.device] = None) -> None:
+    """Load a checkpoint into the shared inference runtime.
+
+    If `ckpt_path` doesn't exist locally, auto-downloads from
+    `inpersonin/HinGPT` on HF Hub and caches to /tmp/best.pt.
+    """
+
+    resolved = _resolve_checkpoint_path(ckpt_path)
+    model, encoding, resolved_device = load_model_from_checkpoint(resolved, device)
     _STATE.model = model
     _STATE.encoding = encoding
     _STATE.device = resolved_device
-    _STATE.checkpoint_path = ckpt_path
+    _STATE.checkpoint_path = resolved
 
 
 def unload_model() -> None:
