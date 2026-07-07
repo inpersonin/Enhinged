@@ -6,6 +6,7 @@ import inspect
 import math
 from typing import Optional
 
+import tiktoken
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
@@ -162,7 +163,9 @@ class HinglishGPT(nn.Module):
 
         if targets is not None:
             logits = self.lm_head(x)
-            loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1))
+            # ignore_index=-100: positions masked by the boundary-aligned sampler
+            # (EOS crossings between unrelated pairs) contribute zero loss.
+            loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=-100)
         else:
             logits = self.lm_head(x[:, [-1], :])
             loss = None
@@ -266,7 +269,19 @@ def generate(
         if repetition_penalty != 1.0:
             for batch_index in range(idx.size(0)):
                 unique_tokens = idx[batch_index].unique()
-                logits[batch_index, unique_tokens] /= repetition_penalty
+                token_logits = logits[batch_index, unique_tokens]
+                # Dividing negative logits by penalty>1 makes them LESS
+                # negative (higher probability) -- the opposite of what a
+                # repetition penalty should do. The correct rule (as in
+                # the CTRL paper / HF's implementation) is: divide when
+                # the logit is positive, multiply when it's negative, so
+                # the token's score always moves toward -inf regardless
+                # of sign.
+                logits[batch_index, unique_tokens] = torch.where(
+                    token_logits > 0,
+                    token_logits / repetition_penalty,
+                    token_logits * repetition_penalty,
+                )
 
         logits = logits / temperature
 
@@ -332,7 +347,5 @@ def load_model_from_checkpoint(
     model.load_state_dict(checkpoint["model_state"])
     model.to(resolved_device)
     model.eval()
-    import tiktoken
-
     encoding = tiktoken.get_encoding(DEFAULT_TOKENIZER_NAME)
     return model, encoding, resolved_device
